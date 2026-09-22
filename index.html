@@ -27,6 +27,7 @@
   main { max-width: 920px; margin: 0 auto; padding: 64px 24px 96px; }
   h1 { font-size: 2.2rem; margin: 0 0 8px; letter-spacing: -0.01em; }
   p.lede { color: var(--text-dim); font-size: 1.05rem; max-width: 60ch; margin: 0 0 36px; }
+  .cta-row { display: flex; flex-wrap: wrap; gap: 12px; }
   a.cta {
     display: inline-flex; align-items: center; gap: 8px;
     background: var(--accent); color: #0b1206; font-weight: 600;
@@ -34,6 +35,13 @@
     font-size: 1rem;
   }
   a.cta:hover { filter: brightness(1.08); }
+  a.cta-secondary {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: transparent; color: var(--text); font-weight: 600;
+    padding: 11px 20px; border-radius: 8px; border: 1px solid var(--border);
+    text-decoration: none; font-size: 1rem;
+  }
+  a.cta-secondary:hover { border-color: var(--accent-2); color: var(--accent-2); }
   h2 {
     font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.08em;
     color: var(--text-faint); margin: 56px 0 18px; font-weight: 700;
@@ -57,7 +65,10 @@
 <main>
   <h1>Chat Tree Canvas</h1>
   <p class="lede">A branching, tree-structured chat canvas with two interchangeable frontends (Reflex and Streamlit) over a shared, framework-free core.</p>
-  <a class="cta" href="_pm/chat_tree_canvas_presentation.html">Open the presentation →</a>
+  <div class="cta-row">
+    <a class="cta" href="_pm/chat_tree_canvas_presentation.html">Open the presentation →</a>
+    <a class="cta-secondary" href="https://app-speaker-feedback-sfkscfqro3jflaleouxryt.streamlit.app/?speaker=Arvindra&amp;event=AI%20Camp&amp;talk=Rethinking%20the%20Chat%20Interface%3A%20From%20Linear%20Traces%20to%20Canvas%20Trees" target="_blank" rel="noopener">Please rate this talk</a>
+  </div>
 
   <h2>Architecture &amp; user journey diagrams</h2>
   <div class="grid">
