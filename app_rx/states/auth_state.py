@@ -13,7 +13,7 @@ for user operations.
 AuthState.login()                        # Redirect to Auth0
 AuthState.on_auth_callback()             # Called after Auth0 auth
 AuthState.logout()                       # Clear state + Auth0 logout
-AuthState.backdoor_login()               # Testing helper
+# AuthState.backdoor_login()             # Admin bypass, disabled by default — see below
 
 Computed Properties
 
@@ -211,22 +211,27 @@ class AuthState(rx.State):
         logout_url_full = f"https://{domain}/v2/logout?{urlencode(params)}"
         return rx.call_script(f"window.location.href = '{logout_url_full}';")
 
-    @rx.event
-    def backdoor_login(self):
-        """Secret login for testing (admin access)."""
-        self.user = User()
-        self.user.role = Role.admin
-        self.user.email = "admin@example.com"
-        self.user.name = "admin"
-
-        id_token = os.getenv("ADMIN_ID_TOKEN")
-        self.token_info = {"id_token": id_token}
-        self.is_authenticated = True
-
-    @rx.event
-    def backdoor_logout(self):
-        """Secret logout for testing."""
-        return self.logout()
+    # Disabled in this public distro: these two handlers let an external
+    # caller (e.g. a sidecar admin tool) sign in as an admin user without
+    # going through Auth0, bypassing login entirely. Uncomment only if you
+    # control who can reach this app's event endpoint.
+    #
+    # @rx.event
+    # def backdoor_login(self):
+    #     """Secret login for testing (admin access)."""
+    #     self.user = User()
+    #     self.user.role = Role.admin
+    #     self.user.email = "admin@example.com"
+    #     self.user.name = "admin"
+    #
+    #     id_token = os.getenv("ADMIN_ID_TOKEN")
+    #     self.token_info = {"id_token": id_token}
+    #     self.is_authenticated = True
+    #
+    # @rx.event
+    # def backdoor_logout(self):
+    #     """Secret logout for testing."""
+    #     return self.logout()
 
     # Computed properties for UI access
     @rx.var
