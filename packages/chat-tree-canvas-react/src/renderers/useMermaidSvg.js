@@ -14,7 +14,13 @@ function ensureInit() {
   if (_initialized) return;
   // securityLevel:'strict' — mermaid strips scripts/HTML from diagram source
   // (the source is untrusted: sandbox script output or model prose).
-  mermaid.initialize({ startOnLoad: false, securityLevel: 'strict' });
+  // suppressErrorRendering — without this, mermaid.render() inserts its own
+  // error banner ("Syntax error in text...") directly into the page DOM as a
+  // side effect, on top of rejecting the promise our .catch() below already
+  // handles. That banner isn't part of React's tree, so it never gets
+  // cleaned up on node switch and appears to "stick" across the whole
+  // canvas. This flag leaves error handling entirely to our own catch path.
+  mermaid.initialize({ startOnLoad: false, securityLevel: 'strict', suppressErrorRendering: true });
   _initialized = true;
 }
 
