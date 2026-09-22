@@ -23,6 +23,8 @@ store, so a session started in one host opens exactly as it left off in the othe
 
 ## Docs
 
+- **[Presentation](https://asehmi.github.io/chat-tree-canvas-distro/)** — the intro deck
+  and architecture/user-journey diagrams, live via GitHub Pages.
 - **[User Guide](_pm/USER_GUIDE.md)** — using the app: what every button does, when it's
   available, and which workflow to reach for.
 - **[Build & Install Instructions](_pm/INSTRUCTIONS.md)** — full setup for one or both
