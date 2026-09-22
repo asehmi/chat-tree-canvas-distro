@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Chat Tree Canvas</title>
+<style>
+  :root {
+    --bg: #101014;
+    --surface: #17171c;
+    --surface-2: #1c1c22;
+    --border: #2c2c34;
+    --text: #e8e8ea;
+    --text-dim: #9a9aa4;
+    --text-faint: #55555f;
+    --accent: #64a923;
+    --accent-soft: rgba(100, 169, 35, 0.14);
+    --accent-2: #7c8cf8;
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--text); font-family: var(--font); }
+  body {
+    background-image: radial-gradient(circle, var(--border) 1.4px, transparent 1.4px);
+    background-size: 28px 28px;
+  }
+  main { max-width: 920px; margin: 0 auto; padding: 64px 24px 96px; }
+  h1 { font-size: 2.2rem; margin: 0 0 8px; letter-spacing: -0.01em; }
+  p.lede { color: var(--text-dim); font-size: 1.05rem; max-width: 60ch; margin: 0 0 36px; }
+  a.cta {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--accent); color: #0b1206; font-weight: 600;
+    padding: 12px 20px; border-radius: 8px; text-decoration: none;
+    font-size: 1rem;
+  }
+  a.cta:hover { filter: brightness(1.08); }
+  h2 {
+    font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.08em;
+    color: var(--text-faint); margin: 56px 0 18px; font-weight: 700;
+  }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
+  a.card {
+    display: block; background: var(--surface); border: 1px solid var(--border);
+    border-radius: 10px; overflow: hidden; text-decoration: none; color: var(--text);
+  }
+  a.card:hover { border-color: var(--accent-2); }
+  a.card img { width: 100%; display: block; aspect-ratio: 16/9; object-fit: cover; background: var(--surface-2); }
+  .card-body { padding: 12px 14px 14px; }
+  .card-num { color: var(--accent-2); font-size: 0.75rem; font-weight: 700; }
+  .card-title { font-size: 0.95rem; font-weight: 600; margin: 4px 0 4px; }
+  .card-blurb { color: var(--text-dim); font-size: 0.82rem; line-height: 1.4; }
+  footer { margin-top: 64px; color: var(--text-faint); font-size: 0.8rem; }
+  footer a { color: var(--text-dim); }
+</style>
+</head>
+<body>
+<main>
+  <h1>Chat Tree Canvas</h1>
+  <p class="lede">A branching, tree-structured chat canvas with two interchangeable frontends (Reflex and Streamlit) over a shared, framework-free core.</p>
+  <a class="cta" href="_pm/chat_tree_canvas_presentation.html">Open the presentation →</a>
+
+  <h2>Architecture &amp; user journey diagrams</h2>
+  <div class="grid">
+    <a class="card" href="_pm/chat_tree_canvas_architecture.html">
+      <img src="_pm/thumbs/chat_tree_canvas_architecture.png" alt="" loading="lazy" />
+      <div class="card-body">
+        <div class="card-num">01</div>
+        <div class="card-title">The architecture, in one interactive map</div>
+        <div class="card-blurb">Two hosts, one framework-free core, one shared SQLite file.</div>
+      </div>
+    </a>
+    <a class="card" href="_pm/chat_tree_canvas_architecture_app_rx.html">
+      <img src="_pm/thumbs/chat_tree_canvas_architecture_app_rx.png" alt="" loading="lazy" />
+      <div class="card-body">
+        <div class="card-num">02</div>
+        <div class="card-title">Inside app_rx</div>
+        <div class="card-blurb">CanvasState, AuthState, and ThemeState: Reflex, async, over a websocket.</div>
+      </div>
+    </a>
+    <a class="card" href="_pm/chat_tree_canvas_architecture_app_st.html">
+      <img src="_pm/thumbs/chat_tree_canvas_architecture_app_st.png" alt="" loading="lazy" />
+      <div class="card-body">
+        <div class="card-num">03</div>
+        <div class="card-title">Inside app_st</div>
+        <div class="card-blurb">A worker thread and a lock-guarded box: Streamlit's own way to stream tokens.</div>
+      </div>
+    </a>
+    <a class="card" href="_pm/chat_tree_canvas_architecture_streamlit_component.html">
+      <img src="_pm/thumbs/chat_tree_canvas_architecture_streamlit_component.png" alt="" loading="lazy" />
+      <div class="card-body">
+        <div class="card-num">04</div>
+        <div class="card-title">Inside the Streamlit component</div>
+        <div class="card-blurb">How the canvas mounts in a shadow root and reports one event per rerun.</div>
+      </div>
+    </a>
+    <a class="card" href="_pm/chat_tree_canvas_architecture_core.html">
+      <img src="_pm/thumbs/chat_tree_canvas_architecture_core.png" alt="" loading="lazy" />
+      <div class="card-body">
+        <div class="card-num">05</div>
+        <div class="card-title">Inside chat_tree/</div>
+        <div class="card-blurb">Six framework-free modules, shared verbatim by both hosts.</div>
+      </div>
+    </a>
+    <a class="card" href="_pm/chat_tree_canvas_architecture_mock_provider.html">
+      <img src="_pm/thumbs/chat_tree_canvas_architecture_mock_provider.png" alt="" loading="lazy" />
+      <div class="card-body">
+        <div class="card-num">06</div>
+        <div class="card-title">Inside mock_provider.py</div>
+        <div class="card-blurb">A five-endpoint reference backend in one FastAPI file.</div>
+      </div>
+    </a>
+    <a class="card" href="_pm/chat_tree_canvas_user_journeys_core.html">
+      <img src="_pm/thumbs/chat_tree_canvas_user_journeys_core.png" alt="" loading="lazy" />
+      <div class="card-body">
+        <div class="card-num">07</div>
+        <div class="card-title">Getting started, branching, iteration</div>
+        <div class="card-blurb">Opening the canvas, branching a conversation, and the two ways to revise a node.</div>
+      </div>
+    </a>
+    <a class="card" href="_pm/chat_tree_canvas_user_journeys_data.html">
+      <img src="_pm/thumbs/chat_tree_canvas_user_journeys_data.png" alt="" loading="lazy" />
+      <div class="card-body">
+        <div class="card-num">08</div>
+        <div class="card-title">Reviewing results, managing sessions</div>
+        <div class="card-blurb">Living with what the canvas gives back, and moving a whole session around.</div>
+      </div>
+    </a>
+  </div>
+
+  <footer>
+    <a href="README.md">README</a> · <a href="_pm/USER_GUIDE.md">User Guide</a> · <a href="_pm/BLOG_POST.md">Blog post</a>
+  </footer>
+</main>
+</body>
+</html>
