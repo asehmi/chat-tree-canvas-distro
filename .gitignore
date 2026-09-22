@@ -21,8 +21,9 @@ packages/chat-tree-canvas-streamlit/chat_tree_canvas_st/static/
 # Streamlit auth secrets (Auth0 client secret + cookie_secret) — never commit
 .streamlit/secrets.toml
 
-# _pm/ internal dev notes — only USER_GUIDE.md, INSTRUCTIONS.md, BLOG_POST.md, and the
-# .png files they embed are meant to be shared; everything else in _pm/ stays local.
+# _pm/ internal dev notes — only USER_GUIDE.md, INSTRUCTIONS.md, BLOG_POST.md,
+# chat_tree_canvas_presentation.html, and the .png files they embed are meant
+# to be shared; everything else in _pm/ stays local.
 _pm/_TODO.md
 _pm/AG-UI_COMMENT.md
 _pm/DOUBLE_CLICK_BUG.md
@@ -39,6 +40,4 @@ _pm/SPEAKER_NOTES_FULL.md
 _pm/SPEAKER_NOTES_SHORT.md
 _pm/articles/
 _pm/*.excalidraw
-_pm/chat_tree_canvas_presentation.html
-_pm/thumbs/
 _pm/encode_b64.py

@@ -1,0 +1,1147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Chat Tree Canvas — Introduction</title>
+<style>
+  :root {
+    --bg: #101014;
+    --surface: #17171c;
+    --surface-2: #1c1c22;
+    --border: #2c2c34;
+    --border-soft: #232329;
+    --text: #e8e8ea;
+    --text-dim: #9a9aa4;
+    --text-faint: #55555f;
+    --accent: #64a923;
+    --accent-soft: rgba(100, 169, 35, 0.14);
+    --accent-2: #7c8cf8;
+    --danger: #f87c7c;
+    --dot: #232329;
+    --font-display: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    --font-mono: ui-monospace, "Cascadia Code", "SF Mono", Consolas, "Roboto Mono", monospace;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    height: 100%;
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-display);
+    overflow: hidden;
+  }
+
+  body {
+    background-image: radial-gradient(circle, var(--dot) 1.4px, transparent 1.4px);
+    background-size: 28px 28px;
+  }
+
+  ::selection { background: var(--accent-soft); color: var(--text); }
+
+  button { font-family: inherit; }
+
+  /* ── persistent header ───────────────────────────────────────── */
+
+  .chrome {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 18px 28px;
+    pointer-events: none;
+  }
+
+  .chrome-mark { width: 20px; height: 20px; flex-shrink: 0; opacity: 0.9; }
+
+  .chrome-word {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.14em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+  }
+
+  .chrome-fill { flex: 1; }
+
+  .chrome-count {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--text-faint);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.06em;
+  }
+
+  .progress-track {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--border-soft);
+    z-index: 21;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: var(--accent);
+    width: 0%;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .progress-fill { transition: width 0.4s ease; }
+  }
+
+  /* ── slide viewport ──────────────────────────────────────────── */
+
+  .stage {
+    position: relative;
+    height: 100vh;
+    width: 100vw;
+  }
+
+  .slide {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 100px 96px 120px;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transform: translateY(10px);
+  }
+
+  .slide.active {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: translateY(0);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .slide { transition: opacity 0.38s ease, transform 0.38s ease; }
+  }
+
+  .slide-inner { max-width: 1180px; width: 100%; }
+
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    letter-spacing: 0.16em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin: 0 0 18px;
+  }
+
+  h1.slide-title {
+    font-size: clamp(34px, 4.6vw, 58px);
+    font-weight: 750;
+    letter-spacing: -0.02em;
+    line-height: 1.08;
+    margin: 0 0 8px;
+    text-wrap: balance;
+  }
+
+  .slide-subtitle {
+    font-size: clamp(17px, 1.6vw, 21px);
+    color: var(--text-dim);
+    font-weight: 400;
+    line-height: 1.5;
+    max-width: 62ch;
+    margin: 0 0 40px;
+  }
+
+  /* ── build-reveal bullets ────────────────────────────────────── */
+
+  .bullets {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+    margin-top: 36px;
+  }
+
+  .bullet {
+    display: flex;
+    gap: 18px;
+    align-items: baseline;
+    opacity: 0;
+    transform: translateX(-10px);
+    font-size: clamp(19px, 1.9vw, 25px);
+    line-height: 1.42;
+    font-weight: 450;
+    max-width: 44ch;
+  }
+
+  .bullet.shown {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .bullet { transition: opacity 0.32s ease, transform 0.32s ease; }
+  }
+
+  .bullet-mark {
+    flex-shrink: 0;
+    width: 9px; height: 9px;
+    border-radius: 2px;
+    background: var(--accent);
+    margin-top: 0.5em;
+  }
+
+  .bullet.dim { color: var(--text-dim); }
+  .bullet b, .bullet strong { color: var(--text); font-weight: 650; }
+  .bullet code {
+    font-family: var(--font-mono);
+    font-size: 0.82em;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 1px 6px;
+    color: var(--accent-2);
+  }
+
+  /* ── title slide ─────────────────────────────────────────────── */
+
+  .title-slide .slide-inner { display: flex; flex-direction: column; align-items: flex-start; }
+
+  .title-mark { width: 108px; height: 108px; margin-bottom: 28px; }
+
+  .title-slide h1 {
+    font-size: clamp(48px, 7vw, 92px);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+  }
+
+  .title-tagline {
+    font-size: clamp(19px, 2vw, 26px);
+    color: var(--text-dim);
+    margin-top: 4px;
+    font-style: italic;
+  }
+
+  .title-byline {
+    margin-top: 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .byline-name {
+    font-size: 16px;
+    font-weight: 650;
+    color: var(--text);
+  }
+
+  .byline-role {
+    font-size: 14px;
+    color: var(--text-dim);
+  }
+
+  .byline-link {
+    margin-top: 2px;
+    font-size: 14px;
+    color: var(--accent-2);
+    text-decoration: none;
+    width: fit-content;
+  }
+  .byline-link:hover { text-decoration: underline; }
+  .byline-link:focus-visible { outline: 2px solid var(--accent-2); outline-offset: 2px; }
+
+  .title-hint {
+    margin-top: 40px;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--text-faint);
+    letter-spacing: 0.04em;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+
+  .kbd {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text-dim);
+    padding: 2px 6px;
+    border-radius: 4px;
+  }
+
+  /* ── node chips (architecture / typed-block slides) ─────────── */
+
+  .chipboard {
+    margin-top: 34px;
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  .chipboard.shown { opacity: 1; transform: translateY(0); }
+  @media (prefers-reduced-motion: no-preference) {
+    .chipboard { transition: opacity 0.32s ease, transform 0.32s ease; }
+  }
+
+  .chip-row { display: flex; gap: 14px; flex-wrap: wrap; }
+  .chip-row + .chip-row { margin-top: 14px; }
+
+  .chip {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-top: 2px solid var(--accent);
+    border-radius: 8px;
+    padding: 10px 16px;
+    font-family: var(--font-mono);
+    font-size: 14px;
+    color: var(--text);
+    white-space: nowrap;
+  }
+
+  .chip.alt { border-top-color: var(--accent-2); }
+  .chip.ghost {
+    border-top-color: var(--border);
+    color: var(--text-dim);
+    font-size: 13px;
+  }
+
+  .chip-arrow {
+    align-self: center;
+    color: var(--text-faint);
+    font-family: var(--font-mono);
+    font-size: 15px;
+  }
+
+  .chip-core {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-top: 2px solid var(--accent);
+    border-radius: 8px;
+    padding: 14px 18px;
+    width: 100%;
+  }
+  .chip-core-label {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--accent);
+    margin-bottom: 10px;
+  }
+  .chip-core .chip-row { gap: 8px; }
+  .chip-core .chip {
+    border-top-color: var(--border);
+    font-size: 12.5px;
+    padding: 6px 10px;
+    color: var(--text-dim);
+  }
+
+  .arch-col { display: flex; flex-direction: column; align-items: center; gap: 8px; width: 100%; }
+
+  .block-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+    max-width: 760px;
+  }
+  .block-cell {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 14px;
+  }
+  .block-kind {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--accent-2);
+    margin-bottom: 4px;
+  }
+  .block-desc { font-size: 14px; color: var(--text-dim); line-height: 1.4; }
+
+  /* ── diagram modal (thumbnail + notes side by side) ───────────── */
+
+  .diagram-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    background: rgba(8, 8, 10, 0.94);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4vh 4vw;
+    opacity: 0;
+    visibility: hidden;
+  }
+  .diagram-modal.open { opacity: 1; visibility: visible; }
+  @media (prefers-reduced-motion: no-preference) {
+    .diagram-modal { transition: opacity 0.25s ease; }
+  }
+
+  .diagram-modal-panel {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    max-width: 1500px;
+    display: flex;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 12px 48px rgba(0, 0, 0, 0.5);
+  }
+
+  .diagram-modal-visual {
+    flex: 1.4;
+    min-width: 0;
+    background: var(--surface-2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+  .diagram-modal-visual img { width: 100%; height: 100%; object-fit: contain; }
+
+  .diagram-modal-notes {
+    flex: 1;
+    min-width: 320px;
+    max-width: 460px;
+    border-left: 1px solid var(--border);
+    padding: 30px 34px;
+    overflow-y: auto;
+  }
+
+  .diagram-modal-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 14px;
+    line-height: 1.3;
+  }
+
+  .diagram-modal-open {
+    display: inline-block;
+    margin-bottom: 24px;
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    color: var(--accent-2);
+    text-decoration: none;
+    border: 1px solid var(--border);
+    padding: 8px 14px;
+    border-radius: 7px;
+  }
+  .diagram-modal-open:hover { border-color: var(--accent-2); }
+  .diagram-modal-open:focus-visible { outline: 2px solid var(--accent-2); outline-offset: 2px; }
+
+  .diagram-modal-notes-inner p {
+    font-size: 15.5px;
+    line-height: 1.6;
+    color: var(--text);
+    margin: 0 0 16px;
+  }
+  .diagram-modal-notes-inner ul { margin: 0 0 4px; padding-left: 20px; }
+  .diagram-modal-notes-inner li {
+    font-size: 14px;
+    line-height: 1.55;
+    color: var(--text-dim);
+    margin-bottom: 11px;
+  }
+  .diagram-modal-notes-inner b { color: var(--text); font-weight: 650; }
+  .diagram-modal-notes-inner code {
+    font-family: var(--font-mono);
+    font-size: 0.85em;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 1px 6px;
+    color: var(--accent-2);
+  }
+
+  .diagram-modal-close {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    z-index: 2;
+    width: 40px; height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text-dim);
+    cursor: pointer;
+    font-size: 22px;
+    line-height: 1;
+    font-family: var(--font-display);
+  }
+  .diagram-modal-close:hover { color: var(--text); border-color: var(--accent-2); }
+  .diagram-modal-close:focus-visible { outline: 2px solid var(--accent-2); outline-offset: 2px; }
+
+  @media (max-width: 900px) {
+    .diagram-modal-panel { flex-direction: column; }
+    .diagram-modal-notes { max-width: none; border-left: none; border-top: 1px solid var(--border); }
+  }
+
+  /* ── dot rail ─────────────────────────────────────────────────── */
+
+  /* Sits in the same band as the chrome header (top ~0-56px) so it never
+     overlaps slide content below, and clears the diagram iframes on
+     artifact slides instead of sitting over their bottom edge. */
+  .rail {
+    position: fixed;
+    top: 16px;
+    left: 0; right: 0;
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    z-index: 22;
+    pointer-events: none;
+  }
+
+  .rail-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: var(--border);
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    pointer-events: auto;
+  }
+  .rail-dot:hover { background: var(--text-dim); }
+  .rail-dot.on { background: var(--accent); }
+  .rail-dot:focus-visible { outline: 2px solid var(--accent-2); outline-offset: 3px; }
+
+  /* Marks the slides kept in the 20-min short version (see the "short"
+     flag on SLIDES entries): indigo when idle, lime the moment it's the
+     current slide (same "on" rule every dot uses). */
+  .rail-dot--short { background: var(--accent-2); }
+  .rail-dot--short.on { background: var(--accent); }
+
+  /* Short Mode (toggled with the S key): only the short-deck dots stay in
+     the rail, and — see the JS below — arrow/space/Home/End navigation
+     skips every slide that isn't part of that set, not just the dots. */
+  body.short-mode .rail-dot:not(.rail-dot--short) { display: none; }
+
+  /* ── artifact slides (embedded interactive diagrams) ─────────── */
+
+  .gallery-slide {
+    padding: 64px 84px 36px;
+    /* .slide centers its content vertically by default; with 8 cards this
+       block can be taller than the viewport, and centered overflow pushes
+       the top (eyebrow/title) up past its own padding into the chrome bar.
+       Start from the top instead so it only ever grows downward. */
+    justify-content: flex-start;
+  }
+
+  .gallery-slide .slide-inner {
+    max-width: 1500px;
+    width: 100%;
+  }
+
+  .gallery-grid {
+    margin-top: 28px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+  }
+
+  .gallery-card {
+    display: block;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: border-color 0.15s ease, transform 0.15s ease;
+  }
+  .gallery-card:hover { border-color: var(--accent-2); transform: translateY(-2px); }
+  /* Plain :focus, not :focus-visible — the first card is focused
+     programmatically on slide-entry (not via keyboard), and browsers
+     generally withhold :focus-visible styling for script-triggered focus,
+     so the ring would silently never appear when it matters most. */
+  .gallery-card:focus { outline: 2px solid var(--accent-2); outline-offset: 2px; }
+
+  .gallery-thumb {
+    aspect-ratio: 16 / 10;
+    background: var(--surface-2);
+    overflow: hidden;
+  }
+  .gallery-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: top;
+    display: block;
+  }
+
+  .gallery-card-body { padding: 12px 14px 14px; }
+
+  .gallery-card-title {
+    font-size: 13.5px;
+    font-weight: 650;
+    color: var(--text);
+    margin-bottom: 4px;
+    line-height: 1.3;
+  }
+
+  .gallery-card-blurb {
+    font-size: 12px;
+    color: var(--text-dim);
+    line-height: 1.45;
+    margin-bottom: 10px;
+  }
+
+  .gallery-card-open {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.03em;
+    color: var(--text-faint);
+    text-decoration: none;
+  }
+  .gallery-card-open:hover { color: var(--accent-2); }
+  .gallery-card-open:focus-visible { outline: 2px solid var(--accent-2); outline-offset: 2px; }
+
+  @media (max-width: 1100px) {
+    .gallery-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <symbol id="tree-mark" viewBox="0 0 64 64">
+      <path d="M32,8 Q20,18 14,30" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round"/>
+      <path d="M32,8 Q44,18 50,30" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round"/>
+      <path d="M50,30 Q46,42 40,54" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round"/>
+      <path d="M50,30 Q56,42 58,54" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round"/>
+      <circle cx="32" cy="8" r="4.5" fill="var(--accent)"/>
+      <circle cx="14" cy="30" r="3.5" fill="var(--accent)"/>
+      <circle cx="50" cy="30" r="3.5" fill="var(--accent)"/>
+      <circle cx="40" cy="54" r="3" fill="var(--accent)"/>
+      <circle cx="58" cy="54" r="3" fill="var(--accent)"/>
+    </symbol>
+  </defs>
+</svg>
+
+<div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+
+<header class="chrome">
+  <svg class="chrome-mark"><use href="#tree-mark"/></svg>
+  <span class="chrome-word">Chat Tree Canvas</span>
+  <span class="chrome-fill"></span>
+  <span class="chrome-count" id="slideCount">01 / 20</span>
+</header>
+
+<div class="stage" id="stage"></div>
+
+<nav class="rail" id="rail"></nav>
+
+<div class="diagram-modal" id="diagramModal">
+  <div class="diagram-modal-panel">
+    <button class="diagram-modal-close" id="diagramModalClose" aria-label="Close">×</button>
+    <div class="diagram-modal-visual"><img id="diagramModalImg" src="" alt="" /></div>
+    <div class="diagram-modal-notes">
+      <div class="diagram-modal-title" id="diagramModalTitle"></div>
+      <a class="diagram-modal-open" id="diagramModalOpen" href="" target="_blank" rel="noopener">Open interactive diagram ↗</a>
+      <div class="diagram-modal-notes-inner" id="diagramModalNotes"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const SLIDES = [
+  {
+    kind: 'title',
+    eyebrow: 'AN INTRODUCTION',
+    title: 'Chat Tree Canvas',
+    tagline: 'Conversations as trees, not transcripts.',
+    byline: {
+      name: 'Dr. Arvindra Sehmi',
+      role: 'CloudOpti Ltd. · Streamlit Creator (7 Years)',
+      linkedin: 'https://www.linkedin.com/in/asehmi/',
+    },
+    hint: true,
+    short: true,
+  },
+  {
+    eyebrow: '01 · THE PROBLEM',
+    title: 'Every mainstream LLM interface has the same shape',
+    bullets: [
+      'A conversation is a <b>list</b>: you ask, the model answers, and you ask again.',
+      '<b>Exploration pollutes context</b>. One tangential "what if" colors every later answer.',
+      '<b>Alternatives can’t coexist</b>. Comparing framings means overwriting history.',
+      '<b>Revision is destructive</b>. A weak answer three turns back stays wrong, or you restart the whole thread.',
+      '<b>Answers get flattened</b>. Tables, charts, and code all become one markdown blob.',
+    ],
+    short: true,
+  },
+  {
+    eyebrow: '02 · THE IDEA',
+    title: 'Put the conversation on a canvas',
+    bullets: [
+      'A <b>tree of message nodes</b> on an infinite canvas, not a scrolling list.',
+      '<b>Branching is a first-class gesture</b>, not a workaround.',
+      'Inspired by <code>local-lmcanvas</code>, reimagined from scratch in Python.',
+      'Extended for how we work: a real agent backend, multi-user persistence, cascading recomputation.',
+    ],
+    short: true,
+  },
+  {
+    eyebrow: '03 · CORE CONCEPT',
+    title: 'A node is one exchange, nothing more',
+    bullets: [
+      '<code>node_id</code> = exactly one prompt, exactly one answer.',
+      'A <b>conversation</b> = one root-to-leaf path through the tree.',
+      '<b>Branch</b> forks the path. Downstream nodes share nothing until you choose.',
+      'The backend doesn’t know the tree exists. Each node is an independent exchange on the wire.',
+    ],
+    short: true,
+  },
+  {
+    eyebrow: '03 · CORE CONCEPT',
+    title: 'A submitted prompt never changes',
+    bullets: [
+      'No in-place edit. A node’s prompt becomes <b>read-only</b> on send.',
+      'Different wording needs a fresh node. <b>Duplicate</b> makes one, ready to edit and send.',
+      'The same wording, re-answered, is what <b>rerun</b> is for: the words stay, the scope changes.',
+      'A node’s prompt and its answer always describe the <i>same</i> exchange.',
+    ],
+  },
+  {
+    eyebrow: '03 · CORE CONCEPT',
+    title: 'Context is not a server-side thread',
+    bullets: [
+      'The <b>prompt always comes first</b>, so the backend’s intent classifier stays clear.',
+      'Ancestor answers are <b>postfixed</b>, latest ancestor first, behind a clear delimiter.',
+      'What doesn’t fit gets redacted. Tables and charts become a one-line note.',
+      'Any backend accepting a message and streaming a reply powers the canvas.',
+    ],
+  },
+  {
+    eyebrow: '04 · IN PRACTICE',
+    title: 'Rerun has a dial, not a switch',
+    bullets: [
+      'Two independent checkboxes: <b>cascade to descendants</b> / <b>include ancestor context</b>.',
+      'The default is full cascade with fresh context: the standard "fix upstream, ripple down."',
+      'Cascade off: refresh one node, cheaper than the whole subtree.',
+      'Context off: isolate whether a bad answer was the model’s fault, or the context’s.',
+    ],
+  },
+  {
+    eyebrow: '04 · IN PRACTICE',
+    title: 'Answers are typed blocks, not markdown blobs',
+    bullets: [
+      'Eight kinds, one reducer, live streaming and history replay through the same code path.',
+    ],
+    blocks: [
+      ['text', 'markdown prose'],
+      ['tool', 'call status: called → ok / denied'],
+      ['script', 'collapsible generated code'],
+      ['metric', 'a single stat tile'],
+      ['table', 'scrollable records'],
+      ['chart', 'a live Plotly figure'],
+      ['mermaid', 'a rendered diagram, source on toggle'],
+      ['question', 'a follow-up prompt, answered inline'],
+    ],
+    short: true,
+  },
+  {
+    eyebrow: '05 · ARCHITECTURE',
+    title: 'Two hosts, one core',
+    bullets: [
+      '<code>app_rx</code> (Reflex) and <code>app_st</code> (Streamlit), built weeks apart.',
+      'Same canvas package, same domain logic, same SQLite file.',
+      '<code>chat_tree/</code> has zero UI-framework imports and stays framework-free.',
+      'The two hosts share <i>live</i> data, not exported copies.',
+    ],
+    diagram: 'hosts',
+    short: true,
+  },
+  {
+    eyebrow: '05 · ARCHITECTURE',
+    title: 'The backend is a contract, not a dependency',
+    bullets: [
+      '<code>CHAT_API_PROVIDER</code> switches implementations at startup.',
+      '<code>insecure_agent_provider.py</code>: streaming agents, tool calls, real LLM inference.',
+      '<code>mock_provider.py</code>: a 5-endpoint reference protocol, zero infrastructure, every block kind.',
+      'Point the canvas at your own backend by implementing five endpoints.',
+    ],
+    diagram: 'backend',
+  },
+  {
+    eyebrow: '06 · DATA',
+    title: 'One session, either host, live',
+    bullets: [
+      'Same <code>session_id</code> opens in <code>app_rx</code> or <code>app_st</code>: not a copy, the same row.',
+      '<b>Export</b> → <code>chat-tree-canvas/v1</code> JSON: exact canvas shape + coalesced conversations.',
+      '<b>Import</b> creates a new session and leaves your current view untouched.',
+      'Without backend history, nodes degrade to prompt-only. Never silently wrong.',
+    ],
+  },
+  {
+    kind: 'closing',
+    eyebrow: 'CLOSING',
+    title: 'Try the canvas',
+    bullets: [
+      'Five journeys, one map: <code>USER_GUIDE.md</code>',
+      'The reasoning behind every decision: <code>BLOG_POST.md</code>',
+      'Build and run both hosts: <code>INSTRUCTIONS.md</code>',
+      'Questions?',
+    ],
+    short: true,
+  },
+  {
+    kind: 'gallery',
+    eyebrow: 'APPENDIX · DIAGRAMS',
+    title: 'Explore the architecture and the user journeys',
+    subtitle: 'Click a card to see notes, or open the diagram directly.',
+    items: [
+      {
+        title: 'The architecture, in one interactive map',
+        thumb: 'thumbs/chat_tree_canvas_architecture.png',
+        href: 'chat_tree_canvas_architecture.html',
+        blurb: 'Two hosts, one framework-free core, one shared SQLite file.',
+        notes: "\n    <p>Two independent host apps, <code>app_rx</code> (Reflex) and <code>app_st</code> (Streamlit), sit on top of one framework-free core and one shared SQLite file. Neither owns the data. Both are windows onto the same session.</p>\n    <ul>\n      <li>Both bind the same React source. <code>app_rx</code> consumes the raw package via a bun link. <code>app_st</code> gets a Vite-bundled, shadow-DOM-isolated build.</li>\n      <li><code>chat_tree/</code> has zero UI-framework imports. Plain dicts go in, plain dicts come out.</li>\n      <li><code>api_client</code> picks <code>insecure_agent_provider.py</code> or <code>mock_provider.py</code> at runtime through <code>CHAT_API_PROVIDER</code>. The canvas never knows which one answers.</li>\n    </ul>",
+      },
+      {
+        title: 'Inside app_rx',
+        thumb: 'thumbs/chat_tree_canvas_architecture_app_rx.png',
+        href: 'chat_tree_canvas_architecture_app_rx.html',
+        blurb: 'CanvasState, AuthState, and ThemeState: Reflex, async, over a websocket.',
+        notes: "\n    <p><code>CanvasState</code> is the workhorse: 964 lines covering node and edge mutations, streaming, and session load and save. <code>AuthState</code> and <code>ThemeState</code> sit beside CanvasState, handling identity and light or dark mode.</p>\n    <ul>\n      <li>Long-running work (<code>submit_prompt</code>, <code>rerun_subtree</code>) runs as <code>@rx.event(background=True)</code>, non-blocking, pushed to the browser over Reflex's own websocket.</li>\n      <li>Auth and theme both mirror into one <code>localStorage</code> key, so a reload restores identity and mode before the first paint.</li>\n      <li>Everything touching the backend or disk goes through <code>chat_tree/</code>. <code>CanvasState</code> itself never touches HTTP or SQLite directly.</li>\n    </ul>",
+      },
+      {
+        title: 'Inside app_st',
+        thumb: 'thumbs/chat_tree_canvas_architecture_app_st.png',
+        href: 'chat_tree_canvas_architecture_app_st.html',
+        blurb: 'A worker thread and a lock-guarded box: Streamlit’s own way to stream tokens.',
+        notes: "\n    <p>Streamlit has no background-task primitive, so <code>app_st</code> earns the same live-streaming behavior a different way: a worker thread with its own event loop, handing tokens back through a lock-guarded box.</p>\n    <ul>\n      <li><code>controller.py</code> (845 lines) covers the same surface as <code>CanvasState</code>, as module-level functions instead of class methods.</li>\n      <li><code>_stream_worker</code> only ever touches its own <code>_StreamBox</code>. Writing <code>st.session_state</code> needs a script-thread context the worker never has.</li>\n      <li><code>_canvas_fragment</code> polls the box every ~120ms while a stream is live, then stops the moment streaming ends.</li>\n    </ul>",
+      },
+      {
+        title: 'Inside the Streamlit component',
+        thumb: 'thumbs/chat_tree_canvas_architecture_streamlit_component.png',
+        href: 'chat_tree_canvas_architecture_streamlit_component.html',
+        blurb: 'How the canvas mounts in a shadow root and reports one event per rerun.',
+        notes: "\n    <p>The canvas reaches Streamlit through a components-v2 package, rendering inside a shadow root. This keeps CSS from leaking either direction.</p>\n    <ul>\n      <li>Shadow DOM means <code>:root { --vars }</code> can't reach the canvas. Theme variables get set inline on the wrapper div instead, per light or dark mode.</li>\n      <li>All 13 canvas callbacks collapse into one <code>setTriggerValue('event', ...)</code>. Python sees a single event, one script rerun later.</li>\n      <li>Live token streaming reuses the same component <code>key</code> and sends a <code>patch</code> instead of the whole tree. <code>treeCache</code> and <code>mergeById</code> keep every untouched node's object reference stable, so ReactFlow doesn't flicker.</li>\n    </ul>",
+      },
+      {
+        title: 'Inside chat_tree/',
+        thumb: 'thumbs/chat_tree_canvas_architecture_core.png',
+        href: 'chat_tree_canvas_architecture_core.html',
+        blurb: 'Six framework-free modules, shared verbatim by both hosts.',
+        notes: "\n    <p>Six modules, no framework imports, called identically by both hosts: <code>tree.py</code>, <code>context.py</code>, <code>blocks.py</code>, <code>api_client.py</code>, <code>dag_store.py</code>, <code>exporter.py</code>.</p>\n    <ul>\n      <li><code>blocks_from_history</code> replays persisted events through the same reducer a live stream uses. Reload and live streaming render identically by construction, not by coincidence.</li>\n      <li><code>context.py</code> is a transient view, rebuilt fresh from plain node and edge dicts on every call, never a second stored copy of the tree.</li>\n      <li>Both hosts also call <code>tree.py</code> and <code>blocks.py</code> directly, not only through <code>context.py</code>. The diagram shows the most common paths, not every one.</li>\n    </ul>",
+      },
+      {
+        title: 'Inside mock_provider.py',
+        thumb: 'thumbs/chat_tree_canvas_architecture_mock_provider.png',
+        href: 'chat_tree_canvas_architecture_mock_provider.html',
+        blurb: 'A five-endpoint reference backend in one FastAPI file.',
+        notes: "\n    <p><code>mock_provider.py</code> is the whole reference protocol in one FastAPI file: five endpoints, two in-memory dicts, zero infrastructure. Copy this file to wire up your own backend.</p>\n    <ul>\n      <li><code>_mock_events()</code> emits one of every block kind in a single reply: text, tool, script, metric, table, chart, mermaid, question.</li>\n      <li>The reply text embeds a fenced mermaid block <i>and</i> a structured <code>mermaid</code> event in the same round, exercising both render paths at once.</li>\n      <li>The word \"break\" anywhere in the prompt swaps in deliberately malformed mermaid source, for testing the renderer's fail-soft path on demand.</li>\n    </ul>",
+      },
+      {
+        title: 'Getting started, branching, iteration',
+        thumb: 'thumbs/chat_tree_canvas_user_journeys_core.png',
+        href: 'chat_tree_canvas_user_journeys_core.html',
+        blurb: 'Opening the canvas, branching a conversation, and the two ways to revise a node.',
+        notes: "\n    <p>Three of the five everyday journeys: opening the canvas, branching a conversation, and the two ways to revise an already-answered node.</p>\n    <ul>\n      <li>A sent prompt is read-only, on purpose. A node's prompt and its answer always describe the same exchange.</li>\n      <li>Different wording needs <b>duplicate</b>: a fresh node, same parent, prompt editable again.</li>\n      <li>The same wording, re-answered, is what <b>rerun</b> is for, with an explicit choice about cascading to descendants and including ancestor context.</li>\n    </ul>",
+      },
+      {
+        title: 'Reviewing results, managing sessions',
+        thumb: 'thumbs/chat_tree_canvas_user_journeys_data.png',
+        href: 'chat_tree_canvas_user_journeys_data.html',
+        blurb: 'Living with what the canvas gives back, and moving a whole session around.',
+        notes: "\n    <p>The other two journeys: living with what the canvas gives back, and moving a whole session around.</p>\n    <ul>\n      <li>Every block kind renders live and scales with the node on resize. Nothing turns into a flattened markdown blob.</li>\n      <li><b>Export</b> writes the exact canvas shape plus every coalesced root-to-leaf conversation as one <code>chat-tree-canvas/v1</code> JSON file.</li>\n      <li>The same <code>session_id</code> opens live in either host: not a copy, the same row in the same SQLite file.</li>\n    </ul>",
+      },
+    ],
+  },
+];
+
+const stage = document.getElementById('stage');
+const rail = document.getElementById('rail');
+
+function renderDiagram(kind) {
+  if (kind === 'hosts') {
+    return `
+      <div class="chipboard" data-chipboard>
+        <div class="arch-col">
+          <div class="chip-row">
+            <span class="chip">Browser · app_rx</span>
+            <span class="chip">Browser · app_st</span>
+          </div>
+          <span class="chip-arrow">↓</span>
+          <div class="chip-core" style="max-width:640px">
+            <div class="chip-core-label">chat_tree/ · framework-free core</div>
+            <div class="chip-row">
+              <span class="chip">tree.py</span>
+              <span class="chip">blocks.py</span>
+              <span class="chip">context.py</span>
+              <span class="chip">dag_store.py</span>
+              <span class="chip">exporter.py</span>
+            </div>
+          </div>
+        </div>
+      </div>`;
+  }
+  if (kind === 'backend') {
+    return `
+      <div class="chipboard" data-chipboard>
+        <div class="arch-col">
+          <span class="chip ghost">chat_tree/ · api_client → providers/</span>
+          <span class="chip-arrow">↓</span>
+          <div class="chip-row">
+            <span class="chip">insecure_agent_provider.py · :9000</span>
+            <span class="chip alt">mock_provider.py · :9000</span>
+          </div>
+        </div>
+      </div>`;
+  }
+  return '';
+}
+
+function renderBlocks(blocks) {
+  return `<div class="block-grid chipboard" data-chipboard>` +
+    blocks.map(([k, d]) => `
+      <div class="block-cell">
+        <div class="block-kind">${k}</div>
+        <div class="block-desc">${d}</div>
+      </div>`).join('') +
+    `</div>`;
+}
+
+SLIDES.forEach((s, i) => {
+  const el = document.createElement('section');
+  el.className = 'slide' + (s.kind === 'title' ? ' title-slide' : '') + (s.kind === 'image' ? ' image-slide' : '') + (s.kind === 'gallery' ? ' gallery-slide' : '');
+  el.dataset.index = i;
+
+  let html = '<div class="slide-inner">';
+
+  if (s.kind === 'title') {
+    html += `
+      <svg class="title-mark"><use href="#tree-mark"/></svg>
+      <div class="eyebrow">${s.eyebrow}</div>
+      <h1>${s.title}</h1>
+      <div class="title-tagline">${s.tagline}</div>
+      ${s.byline ? `
+      <div class="title-byline">
+        <div class="byline-name">${s.byline.name}</div>
+        <div class="byline-role">${s.byline.role}</div>
+        <a class="byline-link" href="${s.byline.linkedin}" target="_blank" rel="noopener noreferrer">🔗 LinkedIn</a>
+      </div>` : ''}
+      <div class="title-hint">
+        <span class="kbd">→</span><span class="kbd">space</span> advance &nbsp;·&nbsp;
+        <span class="kbd">←</span> back &nbsp;·&nbsp;
+        <span class="kbd">F</span> fullscreen &nbsp;·&nbsp;
+        <span class="kbd">S</span> short mode
+      </div>`;
+  } else {
+    html += `
+      <div class="eyebrow">${s.eyebrow}</div>
+      <h1 class="slide-title">${s.title}</h1>`;
+    if (s.subtitle) html += `<p class="slide-subtitle">${s.subtitle}</p>`;
+    if (s.kind === 'gallery') {
+      html += '<div class="gallery-grid">' + s.items.map((item, i) => `
+        <div class="gallery-card" data-gallery-index="${i}" tabindex="0" role="button" aria-label="View notes for ${item.title}">
+          <div class="gallery-thumb"><img src="${item.thumb}" alt="${item.title}" loading="lazy" /></div>
+          <div class="gallery-card-body">
+            <div class="gallery-card-title">${item.title}</div>
+            <div class="gallery-card-blurb">${item.blurb}</div>
+            <a class="gallery-card-open" href="${item.href}" target="_blank" rel="noopener">Open in new tab ↗</a>
+          </div>
+        </div>`).join('') + '</div>';
+    }
+    if (s.bullets) {
+      html += '<div class="bullets">';
+      s.bullets.forEach((b) => {
+        html += `<div class="bullet"><span class="bullet-mark"></span><span>${b}</span></div>`;
+      });
+      html += '</div>';
+    }
+    if (s.diagram) html += renderDiagram(s.diagram);
+    if (s.blocks) html += renderBlocks(s.blocks);
+  }
+
+  html += '</div>';
+  el.innerHTML = html;
+  stage.appendChild(el);
+
+  const dot = document.createElement('button');
+  dot.className = 'rail-dot' + (s.short ? ' rail-dot--short' : '');
+  dot.setAttribute('aria-label', 'Go to slide ' + (i + 1) + ': ' + s.title + (s.short ? ' (in the short version)' : ''));
+  dot.title = s.title + (s.short ? ' — short version' : '');
+  dot.addEventListener('click', () => goTo(i, true));
+  rail.appendChild(dot);
+});
+
+const slideEls = Array.from(document.querySelectorAll('.slide'));
+const railDots = Array.from(document.querySelectorAll('.rail-dot'));
+const countEl = document.getElementById('slideCount');
+const progressFill = document.getElementById('progressFill');
+
+let current = 0;
+let revealed = 0;
+let shortMode = false;
+
+function buildableCount(i) {
+  const s = SLIDES[i];
+  return (s.bullets ? s.bullets.length : 0) + (s.diagram || s.blocks ? 1 : 0);
+}
+
+function applyReveal() {
+  const slideEl = slideEls[current];
+  const bullets = slideEl.querySelectorAll('.bullet');
+  const extra = slideEl.querySelector('[data-chipboard]');
+  bullets.forEach((b, idx) => b.classList.toggle('shown', idx < revealed));
+  if (extra) extra.classList.toggle('shown', revealed >= bullets.length + 1);
+}
+
+// The indices next()/prev()/Home/End/the progress bar are allowed to land
+// on — every slide when Short Mode is off, only SLIDES[i].short ones when
+// it's on. Dots for the rest are hidden by the body.short-mode CSS rule;
+// this is what makes navigation itself honor the same gate, not just the
+// rail's appearance.
+function visibleIndices() {
+  if (!shortMode) return SLIDES.map((_, i) => i);
+  return SLIDES.reduce((acc, s, i) => { if (s.short) acc.push(i); return acc; }, []);
+}
+
+function render() {
+  slideEls.forEach((el, i) => el.classList.toggle('active', i === current));
+  railDots.forEach((d, i) => d.classList.toggle('on', i === current));
+  const vis = visibleIndices();
+  const pos = vis.indexOf(current);
+  countEl.textContent = String(pos + 1).padStart(2, '0') + ' / ' + vis.length;
+  progressFill.style.width = (vis.length > 1 ? pos / (vis.length - 1) : 0) * 100 + '%';
+  if (SLIDES[current].kind === 'gallery') {
+    // So Tab starts moving between cards right away, without needing a
+    // mouse click into the page first.
+    slideEls[current].querySelector('.gallery-card')?.focus();
+  }
+  applyReveal();
+}
+
+function goTo(i, revealAll) {
+  current = Math.max(0, Math.min(SLIDES.length - 1, i));
+  revealed = revealAll ? buildableCount(current) : 0;
+  render();
+}
+
+function next() {
+  const max = buildableCount(current);
+  if (revealed < max) {
+    revealed += 1;
+    applyReveal();
+    return;
+  }
+  const vis = visibleIndices();
+  const pos = vis.indexOf(current);
+  if (pos < vis.length - 1) {
+    current = vis[pos + 1];
+    revealed = 0;
+    render();
+  }
+}
+
+function prev() {
+  if (revealed > 0) {
+    revealed -= 1;
+    applyReveal();
+    return;
+  }
+  const vis = visibleIndices();
+  const pos = vis.indexOf(current);
+  if (pos > 0) {
+    current = vis[pos - 1];
+    revealed = buildableCount(current);
+    render();
+  }
+}
+
+function setShortMode(on) {
+  shortMode = on;
+  document.body.classList.toggle('short-mode', shortMode);
+  if (shortMode) {
+    const vis = visibleIndices();
+    if (!vis.includes(current)) {
+      // Jump forward to the next slide the short deck keeps; if we're
+      // past all of them, land on the last one instead of the first —
+      // toggling on shouldn't ever jump backward past where you are.
+      current = vis.find((i) => i > current) ?? vis[vis.length - 1];
+      revealed = 0;
+    }
+  }
+  render();
+}
+
+const diagramModal = document.getElementById('diagramModal');
+const diagramModalImg = document.getElementById('diagramModalImg');
+const diagramModalTitle = document.getElementById('diagramModalTitle');
+const diagramModalOpen = document.getElementById('diagramModalOpen');
+const diagramModalNotes = document.getElementById('diagramModalNotes');
+const gallerySlide = SLIDES.find((s) => s.kind === 'gallery');
+
+// Escape closes it and returns focus to the card that opened it. Note: if
+// the deck itself is in page-level 'F' fullscreen when this happens, the
+// browser's native "Escape exits fullscreen" also fires — that's not
+// preventable from JS, so Escape here can drop a presenter out of
+// fullscreen too, not just close the modal.
+let modalTrigger = null;
+
+function openDiagramModal(item, triggerEl) {
+  modalTrigger = triggerEl || null;
+  diagramModalImg.src = item.thumb;
+  diagramModalImg.alt = item.title;
+  diagramModalTitle.textContent = item.title;
+  diagramModalOpen.href = item.href;
+  diagramModalNotes.innerHTML = item.notes;
+  diagramModal.classList.add('open');
+}
+
+function closeDiagramModal() {
+  diagramModal.classList.remove('open');
+  modalTrigger?.focus();
+  modalTrigger = null;
+}
+
+stage.addEventListener('click', (e) => {
+  if (e.target.closest('.gallery-card-open')) return; // let the new-tab link fire normally
+  const card = e.target.closest('.gallery-card');
+  if (card) {
+    openDiagramModal(gallerySlide.items[Number(card.dataset.galleryIndex)], card);
+  }
+});
+
+stage.addEventListener('keydown', (e) => {
+  if ((e.key === 'Enter' || e.key === ' ') && e.target.classList.contains('gallery-card')) {
+    e.preventDefault();
+    openDiagramModal(gallerySlide.items[Number(e.target.dataset.galleryIndex)], e.target);
+  }
+});
+
+document.getElementById('diagramModalClose').addEventListener('click', closeDiagramModal);
+diagramModal.addEventListener('click', (e) => {
+  if (e.target === diagramModal) closeDiagramModal();
+});
+
+document.addEventListener('keydown', (e) => {
+  if (diagramModal.classList.contains('open')) {
+    if (e.key === 'Escape') { e.preventDefault(); closeDiagramModal(); }
+    return;
+  }
+  if (['ArrowRight', 'ArrowDown', ' ', 'PageDown'].includes(e.key)) { e.preventDefault(); next(); }
+  else if (['ArrowLeft', 'ArrowUp', 'PageUp'].includes(e.key)) { e.preventDefault(); prev(); }
+  else if (e.key === 'Home') { e.preventDefault(); const vis = visibleIndices(); goTo(vis[0], false); }
+  else if (e.key === 'End') { e.preventDefault(); const vis = visibleIndices(); goTo(vis[vis.length - 1], true); }
+  else if (e.key === 'f' || e.key === 'F') {
+    if (!document.fullscreenElement) document.documentElement.requestFullscreen?.();
+    else document.exitFullscreen?.();
+  }
+  else if (e.key === 's' || e.key === 'S') { e.preventDefault(); setShortMode(!shortMode); }
+});
+
+render();
+</script>
+</body>
+</html>
