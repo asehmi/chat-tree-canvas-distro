@@ -765,7 +765,7 @@ const SLIDES = [
     title: 'The backend is a contract, not a dependency',
     bullets: [
       '<code>CHAT_API_PROVIDER</code> switches implementations at startup.',
-      '<code>insecure_agent_provider.py</code>: streaming agents, tool calls, real LLM inference.',
+      '<code>insecure_agent_provider.py</code> (replacing sandboxed_agents.py in the diagram; the sandboxed agents provider isn\'t included in this app repo): streaming agents, tool calls, real LLM inference.',
       '<code>mock_provider.py</code>: a 5-endpoint reference protocol, zero infrastructure, every block kind.',
       'Point the canvas at your own backend by implementing five endpoints.',
     ],
@@ -804,7 +804,7 @@ const SLIDES = [
         thumb: 'thumbs/chat_tree_canvas_architecture.png',
         href: 'chat_tree_canvas_architecture.html',
         blurb: 'Two hosts, one framework-free core, one shared SQLite file.',
-        notes: "\n    <p>Two independent host apps, <code>app_rx</code> (Reflex) and <code>app_st</code> (Streamlit), sit on top of one framework-free core and one shared SQLite file. Neither owns the data. Both are windows onto the same session.</p>\n    <ul>\n      <li>Both bind the same React source. <code>app_rx</code> consumes the raw package via a bun link. <code>app_st</code> gets a Vite-bundled, shadow-DOM-isolated build.</li>\n      <li><code>chat_tree/</code> has zero UI-framework imports. Plain dicts go in, plain dicts come out.</li>\n      <li><code>api_client</code> picks <code>insecure_agent_provider.py</code> or <code>mock_provider.py</code> at runtime through <code>CHAT_API_PROVIDER</code>. The canvas never knows which one answers.</li>\n    </ul>",
+        notes: "\n    <p>Two independent host apps, <code>app_rx</code> (Reflex) and <code>app_st</code> (Streamlit), sit on top of one framework-free core and one shared SQLite file. Neither owns the data. Both are windows onto the same session.</p>\n    <ul>\n      <li>Both bind the same React source. <code>app_rx</code> consumes the raw package via a bun link. <code>app_st</code> gets a Vite-bundled, shadow-DOM-isolated build.</li>\n      <li><code>chat_tree/</code> has zero UI-framework imports. Plain dicts go in, plain dicts come out.</li>\n      <li><code>api_client</code> picks <code>insecure_agent_provider.py</code> (replacing sandboxed_agents.py in the diagram; the sandboxed agents provider isn't included in this app repo) or <code>mock_provider.py</code> at runtime through <code>CHAT_API_PROVIDER</code>. The canvas never knows which one answers.</li>\n    </ul>",
       },
       {
         title: 'Inside app_rx',
