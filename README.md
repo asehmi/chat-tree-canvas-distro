@@ -21,6 +21,8 @@ implementations ship in this repo — a canned demo and a real, LLM-backed agent
 [below](#try-a-real-agent-without-sandboxed_agents) — and persist to the same session
 store, so a session started in one host opens exactly as it left off in the other.
 
+![Example sessions on the canvas](example-screenshots.png)
+
 ## Docs
 
 - **[Presentation](https://asehmi.github.io/chat-tree-canvas-distro/)** — the intro deck
