@@ -1,0 +1,43 @@
+/* Copyright (c) 2026 Arvindra Sehmi
+   Licensed under the MIT License — see LICENSE for details. */
+
+/* chat-tree-canvas-react — semantic theme variables.
+ *
+ * Namespaced with a `--ctc-` prefix (not the more generic `--primary`,
+ * `--highlight`, etc.) because this package is meant to be embedded in
+ * arbitrary host pages, and generic names are exactly the ones a host's own
+ * design system is likely to have already claimed. A host maps its own
+ * tokens onto this contract (e.g. `--ctc-highlight: var(--highlight);`)
+ * rather than the package assuming it owns those names outright.
+ *
+ * The canvas reads var(--ctc-highlight) (header action icons, dark-mode node
+ * frames and scrollbars, the intent badge); the rest of the set is shipped
+ * so hosts can build matching chrome. Values are the "Performance" palette.
+ *
+ * Dark mode: add a `dark` class to <body> (or any ancestor of the canvas)
+ * and pass mode="dark" to <ChatCanvas>. Hosts with their own theme system
+ * can skip this file entirely and define --ctc-highlight themselves.
+ */
+
+:root,
+.light {
+  --ctc-primary: #004CA3;
+  --ctc-primary-accent: #0a85ff;
+  --ctc-highlight: #64A923;
+  --ctc-secondary: #99ccff;
+  --ctc-default: #2a3e50;
+  --ctc-dark: #282c34;
+  --ctc-dim: #808080;
+  --ctc-light: #F5F5F5;
+}
+
+.dark {
+  --ctc-primary: #5277AD;
+  --ctc-primary-accent: #013E7F;
+  --ctc-highlight: #64A923;
+  --ctc-secondary: #001025;
+  --ctc-default: #828F9B;
+  --ctc-dark: #fffdfb;
+  --ctc-dim: #474747;
+  --ctc-light: #000000;
+}

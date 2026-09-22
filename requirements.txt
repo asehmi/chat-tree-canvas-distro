@@ -1,0 +1,32 @@
+auth0-python==4.13.0
+reflex==0.8.24.post1
+httpx
+python-dotenv
+PyJWT
+streamlit>=1.58
+Authlib>=1.3.2
+
+# mock provider server only (mock_provider.py)
+fastapi
+uvicorn
+
+# insecure agent provider only (insecure_agent_provider.py) — pydantic and
+# tenacity are already pulled in transitively above, listed here explicitly
+# since this is meant to be shareable as a standalone piece.
+anthropic
+google-genai
+tenacity
+pydantic
+aiosqlite
+
+# insecure agent provider's market_tools.py (financial-analyst toolset) —
+# pandas is already pulled in transitively above.
+yfinance
+plotly
+ddgs
+tabulate
+
+# scripts/sync_insecure_agent_db.py only (dev tooling for the project author,
+# not needed to run insecure_agent_provider.py itself) -- not installed by
+# default; run `pip install sqlitecloud` yourself if you use that script.
+# sqlitecloud

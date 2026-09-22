@@ -1,0 +1,65 @@
+/* Copyright (c) 2026 Arvindra Sehmi
+   Licensed under the MIT License — see LICENSE for details. */
+
+/* Import Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap');
+
+/* Global Font Families */
+:root {
+  --font-display: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+body {
+  font-family: var(--font-sans);
+}
+
+h1, h2, h3, h4, h5, h6, [class*="heading"] {
+  font-family: var(--font-display);
+  font-weight: 600;
+}
+
+/*
+"Performance" theme.
+
+Semantic CSS variables cascade from body classes: `theme-performance` plus
+`light` or `dark` (applied by ThemeState via rx.call_script).
+
+  --primary          Identity, anchor, brand
+  --primary-accent   Motion: hover, active, focus
+  --highlight        Callouts, key buttons, emotional punch
+  --secondary        Cards, backgrounds, neutral balance
+  --default          Text, structure, grounding
+  --dark / --light   Mode bases (inverted in dark mode)
+  --dim              Disabled states, borders, dividers
+*/
+
+/* https://coolors.co/004CA3-0a85ff-64A923-99ccff-2a3e50-0a0a0a-808080-F5F5F5 */
+.theme-performance.light {
+  --primary: #004CA3;
+  --primary-accent: #0a85ff;
+  --highlight: #64A923;
+  --secondary: #99ccff;
+  --default: #2a3e50;
+  /* App background (user request) — was #0a0a0a. Only the bg-dark/text-dark/
+     border-dark utilities and .dark .text-on-accent read --dark, and the
+     latter only applies in the .dark block (untouched here), so this is
+     safe to change in isolation. */
+  --dark: #282c34;
+  --dim: #808080;
+  --light: #F5F5F5;
+}
+
+/* https://coolors.co/5277AD-013E7F-1D4100-001025-828F9B-CFCFCF-474747-000000 */
+/* --highlight lifted from the stock #1D4100 to a lighter green (user request:
+   the Sign In/Out button was too dark against the dark background). */
+.theme-performance.dark {
+  --primary: #5277AD;
+  --primary-accent: #013E7F;
+  --highlight: #64A923;
+  --secondary: #001025;
+  --default: #828F9B;
+  --dark: #fffdfb;
+  --dim: #474747;
+  --light: #000000;
+}

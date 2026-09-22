@@ -1,0 +1,25 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "chat-tree-canvas-st"
+version = "0.1.0"
+description = "Streamlit custom component (components v2) hosting the chat-tree-canvas-react branching-conversation canvas."
+requires-python = ">=3.10"
+dependencies = ["streamlit>=1.58"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["chat_tree_canvas_st"]
+# Ship the built frontend bundle inside the wheel.
+artifacts = ["chat_tree_canvas_st/static/*"]
+
+# Streamlit components-v2 manifest. The registered key is
+# "<project name>.<entry name>" — i.e. "chat-tree-canvas-st.chat_tree_canvas_st"
+# (must match _COMPONENT_KEY in chat_tree_canvas_st/__init__.py). asset_dir is
+# resolved relative to the importable package root (chat_tree_canvas_st/), so
+# "static" means chat_tree_canvas_st/static/ — the Vite build output.
+[tool.streamlit.component]
+components = [
+    { name = "chat_tree_canvas_st", asset_dir = "static" },
+]

@@ -1,0 +1,171 @@
+/* Copyright (c) 2026 Arvindra Sehmi
+   Licensed under the MIT License — see LICENSE for details. */
+
+/* ============================================
+   SEMANTIC COLOR UTILITIES
+   (themes.css loaded as a separate stylesheet via rx.App in app.py)
+   ============================================ */
+
+/* Text colors */
+.text-primary {
+  color: var(--primary) !important;
+}
+.text-primary-accent {
+  color: var(--primary-accent) !important;
+}
+.text-highlight {
+  color: var(--highlight) !important;
+}
+.text-secondary {
+  color: var(--secondary) !important;
+}
+.text-default {
+  color: var(--default) !important;
+}
+.text-dark {
+  color: var(--dark) !important;
+}
+.text-dim {
+  color: var(--dim) !important;
+}
+.text-light {
+  color: var(--light) !important;
+}
+
+
+/* Background colors */
+.bg-primary {
+  background-color: var(--primary) !important;
+}
+.hover\:bg-primary:hover {
+  background-color: var(--primary) !important;
+}
+
+.bg-primary-accent {
+  background-color: var(--primary-accent) !important;
+}
+.hover\:bg-primary-accent:hover {
+  background-color: var(--primary-accent) !important;
+}
+
+.bg-highlight {
+  background-color: var(--highlight) !important;
+}
+.hover\:bg-highlight:hover {
+  background-color: var(--highlight) !important;
+}
+
+.bg-secondary {
+  background-color: var(--secondary) !important;
+}
+.hover\:bg-secondary:hover {
+  background-color: var(--secondary) !important;
+}
+
+.bg-default {
+  background-color: var(--default) !important;
+}
+.hover\:bg-default:hover {
+  background-color: var(--default) !important;
+}
+
+.bg-dark {
+  background-color: var(--dark) !important;
+}
+.hover\:bg-dark:hover {
+  background-color: var(--dark) !important;
+}
+
+.bg-dim {
+  background-color: var(--dim) !important;
+}
+.hover\:bg-dim:hover {
+  background-color: var(--dim) !important;
+}
+
+.bg-light {
+  background-color: var(--light) !important;
+}
+.hover\:bg-light:hover {
+  background-color: var(--light) !important;
+}
+
+/* Border colors */
+.border-primary {
+  border-color: var(--primary) !important;
+}
+.border-primary-accent {
+  border-color: var(--primary-accent) !important;
+}
+.border-highlight {
+  border-color: var(--highlight) !important;
+}
+.border-secondary {
+  border-color: var(--secondary) !important;
+}
+.border-default {
+  border-color: var(--default) !important;
+}
+.border-dark {
+  border-color: var(--dark) !important;
+}
+.border-dim {
+  border-color: var(--dim) !important;
+}
+.border-light {
+  border-color: var(--light) !important;
+}
+
+/* Pale text that stays readable on bg-primary-accent in both modes:
+   light mode → var(--light) #F5F5F5, dark mode → var(--dark) #CFCFCF
+   (the mode classes invert the vars, so neither alone works in both). */
+.light .text-on-accent {
+  color: var(--light) !important;
+}
+.dark .text-on-accent {
+  color: var(--dark) !important;
+}
+
+/* Hover states */
+.hover\:text-primary:hover {
+  color: var(--primary) !important;
+}
+.hover\:text-primary-accent:hover {
+  color: var(--primary-accent) !important;
+}
+.hover\:text-highlight:hover {
+  color: var(--highlight) !important;
+}
+.hover\:text-secondary:hover {
+  color: var(--secondary) !important;
+}
+.hover\:text-default:hover {
+  color: var(--default) !important;
+}
+.hover\:text-dark:hover {
+  color: var(--dark) !important;
+}
+.hover\:text-dim:hover {
+  color: var(--dim) !important;
+}
+.hover\:text-light:hover {
+  color: var(--light) !important;
+}
+
+/* ============================================
+   REACT FLOW GLOBAL STYLES
+   ============================================ */
+
+/* Keep handles as crosshair */
+.react-flow__handle {
+  cursor: crosshair !important;
+}
+
+/* Pan area behavior */
+.react-flow__pane {
+  cursor: grab !important;
+}
+
+.react-flow__pane:active {
+  cursor: grabbing !important;
+}

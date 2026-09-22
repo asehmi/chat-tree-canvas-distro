@@ -1,0 +1,44 @@
+/* Copyright (c) 2026 Arvindra Sehmi
+   Licensed under the MIT License — see LICENSE for details. */
+
+/*
+ * Bridges app_rx's own theme tokens (assets/css/themes.css) onto
+ * chat-tree-canvas-react's public variable contract.
+ *
+ * The canvas package's runtime code (theme.jsx, ChatCanvas.jsx) reads a
+ * namespaced set of CSS variables — --ctc-highlight, --ctc-dark, etc. — not
+ * app_rx's own --highlight/--dark/etc. The prefix exists so the package's
+ * contract can't collide with a stranger host's own generic tokens (see
+ * chat-tree-canvas-react/theme.css); app_rx isn't a stranger, so there's no
+ * collision risk here, but the package's JS is shared and host-agnostic —
+ * it reads --ctc-* unconditionally, regardless of which host loaded it — so
+ * every host, including this one, still has to supply those names somehow.
+ *
+ * This file is that supply: a one-line-per-token alias onto app_rx's
+ * existing --highlight/--dark/etc. (themes.css remains the single source of
+ * truth those values come from), kept in its own file rather than mixed
+ * into themes.css itself, since this is a bridge to an external package's
+ * contract, not part of app_rx's own theme definition.
+ */
+
+.theme-performance.light {
+  --ctc-primary: var(--primary);
+  --ctc-primary-accent: var(--primary-accent);
+  --ctc-highlight: var(--highlight);
+  --ctc-secondary: var(--secondary);
+  --ctc-default: var(--default);
+  --ctc-dark: var(--dark);
+  --ctc-dim: var(--dim);
+  --ctc-light: var(--light);
+}
+
+.theme-performance.dark {
+  --ctc-primary: var(--primary);
+  --ctc-primary-accent: var(--primary-accent);
+  --ctc-highlight: var(--highlight);
+  --ctc-secondary: var(--secondary);
+  --ctc-default: var(--default);
+  --ctc-dark: var(--dark);
+  --ctc-dim: var(--dim);
+  --ctc-light: var(--light);
+}

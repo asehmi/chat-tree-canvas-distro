@@ -1,0 +1,44 @@
+assets/external/
+*.py[cod]
+.states
+.web
+.venv/
+.web/
+__pycache__/
+*.pyc
+data/
+.db/
+.states/
+*.db
+.env
+reflex_run*.log
+bash.exe.stackdump
+packages/*/node_modules/
+.claude/scheduled_tasks.lock
+packages/*/frontend/node_modules/
+packages/chat-tree-canvas-streamlit/chat_tree_canvas_st/static/
+
+# Streamlit auth secrets (Auth0 client secret + cookie_secret) — never commit
+.streamlit/secrets.toml
+
+# _pm/ internal dev notes — only USER_GUIDE.md, INSTRUCTIONS.md, BLOG_POST.md, and the
+# .png files they embed are meant to be shared; everything else in _pm/ stays local.
+_pm/_TODO.md
+_pm/AG-UI_COMMENT.md
+_pm/DOUBLE_CLICK_BUG.md
+_pm/HUMAN_IN_THE_LOOP_PLAN.md
+_pm/EXTRACTING_THE_CANVAS.md
+_pm/LIVE_TOKEN_STREAMING_IN_APP_ST.md
+_pm/STREAMLIT_SHADOW_DOM_WORKAROUND.md
+_pm/MERMAID_BLOCK_IMPLEMENTATION.md
+_pm/INSECURE_AGENT_PROVIDER_PLAN.md
+_pm/INSECURE_AGENT_PROVIDER_INSTRUCTIONS.md
+_pm/MARKET_TOOLS_PLAN.md
+_pm/SCRIPT_ROUTER_PLAN.md
+_pm/SPEAKER_NOTES_FULL.md
+_pm/SPEAKER_NOTES_SHORT.md
+_pm/articles/
+_pm/*.excalidraw
+_pm/chat_tree_canvas_presentation.html
+_pm/thumbs/
+_pm/encode_b64.py
